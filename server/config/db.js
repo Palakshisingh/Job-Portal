@@ -3,15 +3,9 @@ import mongoose from "mongoose";
 //Function to connect with mongodb database
 const connectDB=async()=>{
     
-    try {
-        
-        await mongoose.connect(`${process.env.MONGODB_URI}/job-portal`)
-        console.log('mongodb connected');
+    mongoose.connection.on('connected',()=>console.log('Database Connected'))
 
-    } catch (error) {
-        console.log('mongodb connection error',error);
-    }
-    
+    await mongoose.connect(`${process.env.MONGODB_URI}/job-portal`)
 
 }
 

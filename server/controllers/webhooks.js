@@ -1,7 +1,7 @@
 import {Webhook} from 'svix'
 import User from "../models/user.js";
 
-//PI controller tom manage clerk user with database
+//API controller tom manage clerk user with database
 export const clerkWebhooks = async (req,res)=>{
    try {
      // Create a Svix instance with clerk  webhook scret
@@ -22,8 +22,8 @@ export const clerkWebhooks = async (req,res)=>{
         case 'user.created':
         {
             const userData = {
-                _id : DataTransfer.id,
-                email : data.email_addresses[0],
+                _id :data.id,
+                email : data.email_addresses[0].email_addresses,
                 name : data.first_name + " " + data.last_name,
                 image : data.image_url,
                 resume : ''
@@ -35,7 +35,7 @@ export const clerkWebhooks = async (req,res)=>{
         case 'user.updated':
         {
             const userData = {
-                email : data.email_addresses[0],
+                email : data.email_addresses[0].email_addresses,
                 name : data.first_name + " " + data.last_name,
                 image : data.image_url,
             }
@@ -55,6 +55,6 @@ export const clerkWebhooks = async (req,res)=>{
 
    } catch (error) {
        console.log(error.message);
-       res.json({success : false , message:'webhooks error '})
+       res.json({success : false , message:'webhooks error'})
    }
 }
