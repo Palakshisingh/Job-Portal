@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 
 //Function to connect with mongodb database
-const connectDB=async()=>{
+const connectDB=async ()=>{
     
     mongoose.connection.on('connected',()=>console.log('Database Connected'))
 
