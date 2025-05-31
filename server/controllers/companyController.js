@@ -9,13 +9,13 @@ export const registerCompany = async (req, res) => {
   const imageFile = req.file;
 
   if (!name || !email || !password || !imageFile) {
-    return res.json({ success: false, message: "Missing Details" });
+    return res.json({success:false, message: "Missing Details" });
   }
 
   try {
-    const companyExists = await Company.findOne({ email })
+    const companyExists = await Company.findOne({email})
     if (companyExists) {
-      return res.json({ success: false, message: 'Company already registered' });
+      return res.json({success:false, message: 'Company already registered' });
     }
 
     const salt = await bcrypt.genSalt(10);
