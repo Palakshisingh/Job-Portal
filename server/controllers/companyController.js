@@ -48,31 +48,47 @@ export const registerCompany = async (req, res) => {
 
 // Other placeholders
 export const loginCompany = async (req, res) => {
-  const {email,password}=req.body
+  const { email, password } = req.body;
   try {
-    const company=await Company.findOne({email})
-    if (bcrypt.compare(password,company.password)) {
+    const company = await Company.findOne({ email });
+
+    if (!company) {
+      return res.json({ success: false, message: 'Invalid email or password' });
+    }
+
+    const isMatch = await bcrypt.compare(password, company.password);
+    if (isMatch) {
       res.json({
-        success:true,
-        company:{
-          _id:company._id,
-          name:company.name,
+        success: true,
+        company: {
+          _id: company._id,
+          name: company.name,
           email: company.email,
           image: company.image
         },
         token: generateToken(company._id)
-      })
-    }
-    else{
-      res.json({success:false,message:'Invalid email or password'})
+      });
+    } else {
+      res.json({ success: false, message: 'Invalid email or password' });
     }
   } catch (error) {
-    res.json({success:false,message:error.message})
+    res.json({ success: false, message: error.message });
   }
 };
 
 export const getCompanyData = async (req, res) => {
-  res.send("Not implemented");
+  
+  try {
+    
+    const company=req.company;
+    res.json({success:true,company})
+  } catch (error) {
+     res.json({
+      success:false,
+      message:error.message
+     })
+  }
+
 };
 
 export const postJob = async (req, res) => {
@@ -101,7 +117,18 @@ export const getCompanyJobApplicants = async (req, res) => {
 };
 
 export const getCompanyPostedJobs = async (req, res) => {
-  res.send("Not implemented");
+  try {
+    
+    const companyId=req.company._id;
+
+    const jobs=await Job.find({companyId});
+    //(Todo) Adding no. of applicants info in data
+
+    res.json({success:true,jobsData:jobs})
+
+  } catch (error) {
+     res.json({success:false,message:error.message});
+  }
 };
 
 export const ChangeJobApplicationStatus = async (req, res) => {
@@ -109,6 +136,25 @@ export const ChangeJobApplicationStatus = async (req, res) => {
 };
 
 export const changeVisibility = async (req, res) => {
-  res.send("Not implemented");
+      try {
+        const {id}=req.body;
+
+        const companyId=req.company._id
+
+        const job = await Job.findById(id);
+
+        if(!job)
+          return res.json({success:false,message:'Job  not Found'});
+
+        if(companyId.toString() !== job.companyId.toString())
+           return res.json({success:false,message:'Not authorized to modify this job'});
+
+        job.visible=!job.visible
+        await job.save();  
+
+        res.json({success:true,job})     
+      } catch (error) {
+        res.json({success:false,message:error.message})
+      }
 };
  
