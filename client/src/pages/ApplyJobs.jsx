@@ -21,14 +21,10 @@ const ApplyJobs = () => {
 
   const { jobs, backendUrl, userData, userApplications, fetchUserApplication } = useContext(AppContext)
 
-  const checkAlreadyApplied = (jobId) => {
-    const hasApplied = userApplications.some(item => item.jobId._id === jobId)
-    setIsAlreadyApplied(hasApplied)
-  }
 
   const fetchJob = async () => {
     try {
-      const { data } = await axios.get(`${backendUrl}/api/jobs/${id}`)
+      const { data } = await axios.get(backendUrl+`/api/jobs/${id}`)
       if (data.success) {
         setJobData(data.job)
         checkAlreadyApplied(data.job._id)
@@ -68,11 +64,17 @@ const ApplyJobs = () => {
       toast.error(error.message)
     }
   }
+  
+  const checkAlreadyApplied = (jobId) => {
+  const hasApplied = userApplications.some(item => item?.jobId?._id === jobId)
+  setIsAlreadyApplied(hasApplied)
+}
+
 
   useEffect(() => {
     fetchJob()
   }, [id])
-
+  
   return JobData ? (
     <>
       <Navbar />
@@ -120,6 +122,12 @@ const ApplyJobs = () => {
             <div className='w-full lg:w-1/3 mt-8 lg:mt-0 lg:ml-8 space-y-5'>
               <h2>More Jobs From {JobData.companyId.name}</h2>
               {jobs.filter(job => job._id !== JobData._id && job.companyId._id === JobData.companyId._id)
+                .filter(job => {
+                  // set of applied Jobids
+                  const appliedJobsIds=new Set(userApplications.map(app => app.jobId && app.jobId._id))
+                  //Return true if user has notalreay apllied for the job
+                  return !appliedJobsIds.has(job._id);
+                })
                 .slice(0, 4)
                 .map((job, index) => <JobCard key={index} job={job} />)}
             </div>

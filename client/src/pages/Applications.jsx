@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import Navbar from '../components/Navbar'
 import { jobsApplied } from '../assets/assets'
 import moment from 'moment'
@@ -14,7 +14,7 @@ const Applications = () => {
   const [isEdit, setIsEdit] = useState(false)
   const [resumeFile, setResumeFile] = useState(null)
   const [tempFile, setTempFile] = useState(null)
-  const { backendUrl, userData, userApplications, fetchUserData } = useContext(AppContext)
+  const { backendUrl, userData, userApplications, fetchUserData , fetchUserApplication } = useContext(AppContext)
 
   const updateResume = async () => {
     if (!resumeFile) {
@@ -40,17 +40,17 @@ const Applications = () => {
       if (data.success) {
         toast.success(data.message)
         await fetchUserData()
-        setIsEdit(false)
-        setResumeFile(null)
-        setTempFile(null)
       } else {
         toast.error(data.message)
       }
     } catch (error) {
       toast.error(error.message || 'Upload failed')
     }
+       setIsEdit(false)
+       setResumeFile(null)
+       setTempFile(null)
   }
-
+  
   const handleFileChange = (e) => {
     const file = e.target.files[0]
     if (file) {
@@ -67,7 +67,13 @@ const Applications = () => {
     setTempFile(null)
     setIsEdit(false)
   }
-
+ 
+   useEffect(()=>{
+     if(user)
+     {
+      fetchUserApplication()
+     }
+   },[user])
   return (
     <>
       <Navbar />
