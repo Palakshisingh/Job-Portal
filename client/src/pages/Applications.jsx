@@ -16,40 +16,36 @@ const Applications = () => {
   const [tempFile, setTempFile] = useState(null)
   const { backendUrl, userData, userApplications, fetchUserData , fetchUserApplication } = useContext(AppContext)
 
-  const updateResume = async () => {
-    if (!resumeFile) {
-      toast.error('Please select a file first')
-      return
-    }
-    try {
-      const formData = new FormData()
-      formData.append('resume', resumeFile)
-      const token = await getToken()
+  const updateResume = async (file) => {
+  try {
+    const formData = new FormData()
+    formData.append('resume', file)
+    const token = await getToken()
 
-      const { data } = await axios.post(
-        backendUrl + '/api/users/update-resume',
-        formData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'multipart/form-data',
-          },
-        }
-      )
-
-      if (data.success) {
-        toast.success(data.message)
-        await fetchUserData()
-      } else {
-        toast.error(data.message)
+    const { data } = await axios.post(
+      backendUrl + '/api/users/update-resume',
+      formData,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data',
+        },
       }
-    } catch (error) {
-      toast.error(error.message || 'Upload failed')
+    )
+
+    if (data.success) {
+      toast.success(data.message)
+      await fetchUserData()
+    } else {
+      toast.error(data.message)
     }
-       setIsEdit(false)
-       setResumeFile(null)
-       setTempFile(null)
+  } catch (error) {
+    toast.error(error.message || 'Upload failed')
   }
+  setIsEdit(false)
+  setTempFile(null)
+}
+
   
   const handleFileChange = (e) => {
     const file = e.target.files[0]
@@ -59,9 +55,13 @@ const Applications = () => {
   }
 
   const handleSave = async () => {
-    setResumeFile(tempFile)
-    await updateResume()
+  if (!tempFile) {
+    toast.error('Please select a file first')
+    return
   }
+  await updateResume(tempFile)
+}
+
 
   const handleCancel = () => {
     setTempFile(null)
