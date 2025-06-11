@@ -49,12 +49,14 @@ const ViewApplications = () => {
     toast.error(error.message)
   }
  }
+    
+    const validApplicants = applicants ? applicants.filter(item => item.jobId && item.userId) : [];
 
     useEffect(()=>{
       if(companyToken)
          fetchCompanyJobApplcations();
     },[companyToken])
-  return applicants ? applicants.length===0 ? ( 
+  return applicants ? validApplicants.length === 0 ? ( 
      <div className='flex items-center justify-center h-[70vh]'>
     <p className='text-xl sm:text-2xl'>No Applications Available</p>
      </div>
@@ -80,7 +82,7 @@ const ViewApplications = () => {
                                 <img className='w-10 h-10 rounded-full mr-3 max-sm:hidden ' src={applicant.userId.image} alt="" />
                                 <span>{applicant.userId.name} </span>
                             </td>
-                            <td className='py-2 px-4 border-b max-sm:hidden'>{applicant.jobId.jobTitle}</td>
+                            <td className='py-2 px-4 border-b max-sm:hidden'>{applicant.jobId.title}</td>
                             <td className='py-2 px-4 border-b max-sm:hidden'>{applicant.jobId.location}</td>
                             <td className='py-2 px-4 border-b'>
                                 <a href={applicant.userId.resume} target='_blank'

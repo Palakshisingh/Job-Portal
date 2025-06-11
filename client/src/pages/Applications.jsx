@@ -16,11 +16,24 @@ const Applications = () => {
   const [tempFile, setTempFile] = useState(null)
   const { backendUrl, userData, userApplications, fetchUserData , fetchUserApplication } = useContext(AppContext)
 
-  const updateResume = async (file) => {
+  const handleSave = async () => {
+  if (!tempFile) {
+    // Show toast immediately
+    toast.error('Please select a file first')
+    return
+  }
+  // Start upload
+  await updateResume(tempFile)
+}
+
+const updateResume = async (file) => {
   try {
     const formData = new FormData()
     formData.append('resume', file)
     const token = await getToken()
+
+    // Show a loading toast immediately
+    const loadingToast = toast.loading('Uploading resume...')
 
     const { data } = await axios.post(
       backendUrl + '/api/users/update-resume',
@@ -34,14 +47,18 @@ const Applications = () => {
     )
 
     if (data.success) {
-      toast.success(data.message)
-      await fetchUserData()
+      // Immediately show success toast
+      toast.update(loadingToast, { render: data.message, type: 'success', isLoading: false, autoClose: 3000 })
+
+      // Fetch user data in the background
+      fetchUserData()
     } else {
-      toast.error(data.message)
+      toast.update(loadingToast, { render: data.message, type: 'error', isLoading: false, autoClose: 3000 })
     }
   } catch (error) {
     toast.error(error.message || 'Upload failed')
   }
+
   setIsEdit(false)
   setTempFile(null)
 }
@@ -53,15 +70,6 @@ const Applications = () => {
       setTempFile(file)
     }
   }
-
-  const handleSave = async () => {
-  if (!tempFile) {
-    toast.error('Please select a file first')
-    return
-  }
-  await updateResume(tempFile)
-}
-
 
   const handleCancel = () => {
     setTempFile(null)
@@ -95,7 +103,7 @@ const Applications = () => {
                 <button
                   onClick={handleSave}
                   className="bg-blue-600 text-white px-4 py-2 rounded"
-                  disabled={!tempFile}
+                  
                 >
                   Save
                 </button>
@@ -143,31 +151,32 @@ const Applications = () => {
             </tr>
           </thead>
           <tbody>
-            {userApplications.map((job, index) => (
-              <tr key={index}>
-                <td className="py-3 px-4 flex items-center gap-2 border-b">
-                  <img className="w-8 h-8" src={job.companyId.image} alt="" />
-                  {job.companyId.name}
-                </td>
-                <td className="py-2 px-4 border-b">{job.jobId.title}</td>
-                <td className="py-2 px-4 border-b max-sm:hidden">{job.jobId.location.location}</td>
-                <td className="py-2 px-4 border-b max-sm:hidden">{moment(job.date).format('ll')}</td>
-                <td className="py-2 px-4 border-b">
-                  <span
-                    className={`${
-                      job.status === 'Accepted'
-                        ? 'bg-green-100'
-                        : job.status === 'Rejected'
-                        ? 'bg-red-100'
-                        : 'bg-blue-100'
-                    } px-4 py-1.5 rounded`}
-                  >
-                    {job.status}
-                  </span>
-                </td>
-              </tr>
-            ))}
-          </tbody>
+  {userApplications.filter(job => job.jobId && job.companyId).map((job, index) => (
+    <tr key={index}>
+      <td className="py-3 px-4 flex items-center gap-2 border-b">
+        <img className="w-8 h-8" src={job.companyId.image} alt="" />
+        {job.companyId.name}
+      </td>
+      <td className="py-2 px-4 border-b">{job.jobId.title}</td>
+      <td className="py-2 px-4 border-b max-sm:hidden">{job.jobId.location}</td>
+      <td className="py-2 px-4 border-b max-sm:hidden">{moment(job.date).format('ll')}</td>
+      <td className="py-2 px-4 border-b">
+        <span
+          className={`${
+            job.status === 'Accepted'
+              ? 'bg-green-100'
+              : job.status === 'Rejected'
+              ? 'bg-red-100'
+              : 'bg-blue-100'
+          } px-4 py-1.5 rounded`}
+        >
+          {job.status}
+        </span>
+      </td>
+    </tr>
+  ))}
+</tbody>
+
         </table>
       </div>
       <Footer />
